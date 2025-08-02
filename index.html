@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Rubik's Cube</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+      
+      /* Success Modal Styles */
+      .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        animation: fadeIn 0.3s ease-in;
+      }
+      
+      .success-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 15% auto;
+        padding: 40px;
+        border-radius: 20px;
+        width: 80%;
+        max-width: 500px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: slideIn 0.5s ease-out;
+      }
+      
+      .success-content h2 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+      
+      .success-content p {
+        font-size: 1.2em;
+        margin-bottom: 30px;
+      }
+      
+      .success-btn {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        font-size: 1.1em;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin: 0 10px;
+      }
+      
+      .success-btn:hover {
+        transform: scale(1.05);
+      }
+      
+      /* Reward Modal Styles */
+      .reward-modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        animation: fadeIn 0.5s ease-in;
+      }
+      
+      .reward-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+      }
+      
+      .reward-title {
+        font-size: 3em;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        animation: glow 2s ease-in-out infinite alternate;
+      }
+      
+      @keyframes glow {
+        from { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        to { text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff; }
+      }
+      
+      .engine-canvas {
+        width: 400px;
+        height: 300px;
+        margin: 20px 0;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      
+      .cockpit-canvas {
+        width: 400px;
+        height: 300px;
+        margin: 20px 0;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      
+      .wing-canvas {
+        width: 400px;
+        height: 300px;
+        margin: 20px 0;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      
+      .fuselage-canvas {
+        width: 400px;
+        height: 300px;
+        margin: 20px 0;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      
+      .reward-text {
+        font-size: 1.5em;
+        margin: 20px 0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      }
+      
+      .next-level-btn {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        border: none;
+        color: white;
+        padding: 15px 40px;
+        font-size: 1.3em;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+      }
+      
+      .next-level-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+      }
+      
+      /* Failure Modal Styles */
+      .failure-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        animation: fadeIn 0.3s ease-in;
+      }
+      
+      .failure-content {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        margin: 15% auto;
+        padding: 40px;
+        border-radius: 20px;
+        width: 80%;
+        max-width: 500px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: slideIn 0.5s ease-out;
+      }
+      
+      .failure-content h2 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+      
+      .failure-content p {
+        font-size: 1.2em;
+        margin-bottom: 30px;
+      }
+      
+      .failure-btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        font-size: 1.1em;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      
+      .failure-btn:hover {
+        transform: scale(1.05);
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      
+      /* Level buttons styling */
+      .btn-level1 {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .btn-level1:hover {
+        background: linear-gradient(45deg, #5a6fd8, #6a4190);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .btn-level1:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .btn-level2 {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .btn-level2:hover {
+        background: linear-gradient(45deg, #ff5252, #ff7043);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .btn-level2:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .btn-level3 {
+        background: linear-gradient(45deg, #ffd700, #ff8c00);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .btn-level3:hover {
+        background: linear-gradient(45deg, #ffed4e, #ffa726);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .btn-level3:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .btn-level4 {
+        background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .btn-level4:hover {
+        background: linear-gradient(45deg, #8e44ad, #7d3c98);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .btn-level4:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .btn-level5 {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .btn-level5:hover {
+        background: linear-gradient(45deg, #c0392b, #a93226);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .btn-level5:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+      }
+      
+      /* Done button styling */
+      .btn-done {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        border: none;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+      }
+      
+      .btn-done:hover {
+        background: linear-gradient(45deg, #218838, #1ea085);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+      }
+      
+      .btn-done:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info-container">
+      <h2>Key Bindings</h2>
+      <ul>
+        <li>Front: 'F' / Back: 'B'</li>
+        <li>Left: 'L' / Right: 'R'</li>
+        <li>Up: 'U' / Down: 'D'</li>
+        <li>Middle: 'M'</li>
+        <li>Forward: '1' / Reverse: '2'</li>
+      </ul>
+      <button class="btn btn-info" id="undo-button" onclick="undoLastMove()" data-toggle="tooltip" data-placement="right" title="Undo last move">
+        <img src="assets/undo_icon.png" alt="Undo" width="16px">
+      </button>
+      <button class="btn btn-success" id="solve-button" onclick="handleSolve()" data-toggle="tooltip" data-placement="right" title="Solve the cube">Solve</button>
+      <button class="btn btn-warning" id="scramble-button" onclick="scrambleCube()" data-toggle="tooltip" data-placement="right" title="Scramble the cube">Scramble</button>
+      <button class="btn btn-level1" id="level1-button" onclick="scrambleCubeLevel1()" data-toggle="tooltip" data-placement="right" title="Level 1 - 3 moves">Level 1 - Scramble</button>
+      <button class="btn btn-level2" id="level2-button" onclick="scrambleCubeLevel2()" data-toggle="tooltip" data-placement="right" title="Level 2 - 4 moves">Level 2 - Scramble</button>
+      <button class="btn btn-level3" id="level3-button" onclick="scrambleCubeLevel3()" data-toggle="tooltip" data-placement="right" title="Level 3 - 5 moves">Level 3 - Scramble</button>
+      <button class="btn btn-level4" id="level4-button" onclick="scrambleCubeLevel4()" data-toggle="tooltip" data-placement="right" title="Level 4 - 7 moves">Level 4 - Scramble</button>
+      <button class="btn btn-level5" id="level5-button" onclick="scrambleCubeLevel5()" data-toggle="tooltip" data-placement="right" title="Level 5 - 10 moves">Level 5 - Scramble</button>
+      <button class="btn btn-done" id="done-button" onclick="checkIfSolved()" data-toggle="tooltip" data-placement="right" title="Check if solved">Done</button>
+      <button class="btn btn-info" id="reset-button" onclick="resetState()" data-toggle="tooltip" data-placement="right" title="Start over">Reset</button>
+    </div>
+    <div id="action-display"></div>
+    <div id="solution-display"></div>
+    <div id="direction-container">
+      <button id="clockwise-icon" style="display: block;" type="button" class="btn btn-info" onclick="setReverse();">
+        <img src="assets/clockwise_icon.png" alt="Clockwise" data-toggle="tooltip" data-placement="right" title="Change to counter-clockwise" width="32px">
+      </button>
+      <button id="counter-clockwise-icon" style="display: none;" type="button" class="btn btn-info" onclick="setReverse();">
+        <img src="assets/counter-clockwise_icon.png" alt="Counter-Clockwise" data-toggle="tooltip" data-placement="right" title="Change to clockwise" width="32px">
+      </button>
+    </div>
+    <div id="canvas"></div>
+    
+    <div id="messages-container"></div>
+    
+    <!-- Success Modal -->
+    <div id="successModal" class="success-modal">
+      <div class="success-content">
+        <h2 id="successTitle"> Congratulations!</h2>
+        <p id="successMessage">You've successfully solved the level!</p>
+        <button class="success-btn" onclick="collectReward()">Collect Reward</button>
+        <button class="success-btn" onclick="retryCube()">Retry</button>
+      </div>
+    </div>
+    
+    <!-- Reward Modal -->
+    <div id="rewardModal" class="reward-modal">
+      <div class="reward-content">
+        <h1 class="reward-title" id="rewardTitle"> Level Complete!</h1>
+        <canvas id="engineCanvas" class="engine-canvas" style="display: none;"></canvas>
+        <canvas id="cockpitCanvas" class="cockpit-canvas" style="display: none;"></canvas>
+        <canvas id="wingCanvas" class="wing-canvas" style="display: none;"></canvas>
+        <canvas id="fuselageCanvas" class="fuselage-canvas" style="display: none;"></canvas>
+        <div class="reward-text" id="rewardText">✈️ Part Unlocked!</div>
+        <button class="next-level-btn" id="nextLevelBtn" onclick="proceedToNextLevel()">Proceed to Next Level</button>
+      </div>
+    </div>
+    
+    <!-- Failure Modal -->
+    <div id="failureModal" class="failure-modal">
+      <div class="failure-content">
+        <h2>❌ Not Solved Yet</h2>
+        <p>Keep trying! The cube needs to be completely solved.</p>
+        <button class="failure-btn" onclick="closeFailureModal()">Continue</button>
+      </div>
+    </div>
+    
+    <script src="js/three.min.js"></script>
+    <script src="js/OBJLoader.js"></script>
+    <script src="js/SourceLoader.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/KeyboardState.js"></script> <!-- By Jerome Etienne: http://jetienne.com/ -->
+
+    <script type="module" src="modules/main.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
+    <!-- Solve Detection and Reward Script -->
+    <script>
+    // Valid moves for scrambling
+    const VALID_MOVES = ["R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'"];
+    let isScrambling = false;
+    let currentLevel = 0; // 0 = no level, 1 = level 1, 2 = level 2, etc.
+    let isSolved = false;
+    let rewardUnlocked = false;
+    
+    // Animation variables
+    let engineScene, engineCamera, engineRenderer, engineTurbine, engineBody;
+    let cockpitScene, cockpitCamera, cockpitRenderer, cockpitDome, cockpitBody, radarAntenna;
+    let wingScene, wingCamera, wingRenderer, wingMain, wingFlap, wingLight;
+    let fuselageScene, fuselageCamera, fuselageRenderer, fuselageBody, fuselageNose, fuselageTail;
+    let animationId;
+
+    // Level configuration
+    const LEVEL_CONFIG = {
+        1: {
+            moves: 3,
+            title: "Level 1",
+            successMessage: "You've successfully solved Level 1!",
+            rewardTitle: "🎉 Level 1 Complete!",
+            rewardText: "✈️ Engine Part Unlocked!",
+            nextLevelText: "Proceed to Level 2",
+            nextLevel: 2,
+            rewardType: "engine"
+        },
+        2: {
+            moves: 4,
+            title: "Level 2",
+            successMessage: "You've successfully completed Level 2!",
+            rewardTitle: "🎉 Level 2 Complete!",
+            rewardText: "🧠 Cockpit Unlocked! You're ready to pilot.",
+            nextLevelText: "Proceed to Level 3",
+            nextLevel: 3,
+            rewardType: "cockpit"
+        },
+        3: {
+            moves: 5,
+            title: "Level 3: Intermediate Challenge",
+            successMessage: "🎉 Congratulations! You've successfully completed Level 3!",
+            rewardTitle: "🎉 Level 3 Complete!",
+            rewardText: "🚀 Wings Unlocked! You're ready for advanced challenges!",
+            nextLevelText: "Proceed to Level 4",
+            nextLevel: 4,
+            rewardType: "wings"
+        },
+        4: {
+            moves: 7,
+            title: "Level 4: Advanced Challenge",
+            successMessage: "🎉 Congratulations! You've successfully completed Level 4!",
+            rewardTitle: "🎉 Level 4 Complete!",
+            rewardText: "✈️ Aeroplane Body Unlocked!",
+            nextLevelText: "Proceed to Level 5",
+            nextLevel: 5,
+            rewardType: "fuselage"
+        },
+        5: {
+            moves: 10,
+            title: "Level 5: Pro Challenge",
+            successMessage: "🎉 Congratulations! You've successfully completed Level 5!",
+            rewardTitle: "🎉 Level 5 Complete!",
+            rewardText: "🏆 Master Pilot Certificate Unlocked!",
+            nextLevelText: "Proceed to Level 6",
+            nextLevel: 6,
+            rewardType: "master_pilot"
+        }
+    };
+
+    // Generate a random move
+    function getRandomMove() {
+        return VALID_MOVES[Math.floor(Math.random() * VALID_MOVES.length)];
+    }
+
+    // Generate a scramble sequence for any level
+    function generateScrambleSequence(level) {
+        const config = LEVEL_CONFIG[level];
+        if (!config) {
+            console.error(`Level ${level} not configured`);
+            return [];
+        }
+        
+        const sequence = [];
+        let lastMove = '';
+        
+        for (let i = 0; i < config.moves; i++) {
+            let move;
+            do {
+                move = getRandomMove();
+            } while (
+                move === lastMove ||
+                (move.charAt(0) === lastMove.charAt(0) && move !== lastMove)
+            );
+            
+            sequence.push(move);
+            lastMove = move;
+        }
+        
+        return sequence;
+    }
+
+    // Simple solve detection - always return true for now (for testing)
+    function checkIfSolvedSimple() {
+        console.log("Simple solve detection called");
+        
+        // For now, let's just check if the user has made any moves
+        // This is a temporary solution to test the UI
+        const historyString = sessionStorage.getItem("keyEventHistory");
+        const history = historyString ? JSON.parse(historyString) : [];
+        
+        console.log("Move history length:", history.length);
+        
+        // If the user has made some moves, consider it potentially solved
+        // This is just for testing - in reality you'd check the actual cube state
+        if (history.length > 0) {
+            console.log("User has made moves - considering as potentially solved for testing");
+            return true;
+        }
+        
+        console.log("No moves made - not solved");
+        return false;
+    }
+
+    // Main solve check function
+    async function checkIfSolved() {
+        console.log("Done button clicked - checking if cube is solved...");
+        
+        // Disable the Done button temporarily
+        const doneButton = document.getElementById("done-button");
+        doneButton.disabled = true;
+        doneButton.textContent = "Checking...";
+        
+        try {
+            // Use simple solve detection for now
+            const solved = checkIfSolvedSimple();
+            
+            if (solved) {
+                console.log("🎉 Cube is solved!");
+                showSuccessMessage();
+                isSolved = true;
+            } else {
+                console.log("❌ Cube is not solved yet");
+                showFailureMessage();
+            }
+        } catch (error) {
+            console.error("Error checking solve state:", error);
+            showFailureMessage();
+        } finally {
+            // Re-enable the Done button
+            doneButton.disabled = false;
+            doneButton.textContent = "Done";
+        }
+    }
+
+    // Show success message with level-specific content
+    function showSuccessMessage() {
+        const modal = document.getElementById("successModal");
+        const title = document.getElementById("successTitle");
+        const message = document.getElementById("successMessage");
+        
+        // Set level-specific content
+        if (currentLevel > 0 && LEVEL_CONFIG[currentLevel]) {
+            const config = LEVEL_CONFIG[currentLevel];
+            title.textContent = `🎉 Congratulations!`;
+            message.textContent = config.successMessage;
+        } else {
+            title.textContent = "🎉 Congratulations!";
+            message.textContent = "You've successfully solved the cube!";
+        }
+        
+        modal.style.display = "block";
+        
+        // Disable further input
+        disableAllInputs(true);
+        
+        console.log("Success message displayed for level", currentLevel);
+    }
+
+    // Show failure message
+    function showFailureMessage() {
+        const modal = document.getElementById("failureModal");
+        modal.style.display = "block";
+        
+        console.log("Failure message displayed");
+    }
+
+    // Close success modal
+    function closeSuccessModal() {
+        const modal = document.getElementById("successModal");
+        modal.style.display = "none";
+        
+        // Re-enable inputs
+        disableAllInputs(false);
+    }
+
+    // Close failure modal
+    function closeFailureModal() {
+        const modal = document.getElementById("failureModal");
+        modal.style.display = "none";
+    }
+
+    // Collect reward - show appropriate animation
+    function collectReward() {
+        console.log("Collecting reward for level", currentLevel);
+        
+        // Hide success modal
+        const successModal = document.getElementById("successModal");
+        successModal.style.display = "none";
+        
+        // Show reward modal
+        const rewardModal = document.getElementById("rewardModal");
+        rewardModal.style.display = "block";
+        
+        // Set level-specific reward content
+        if (currentLevel > 0 && LEVEL_CONFIG[currentLevel]) {
+            const config = LEVEL_CONFIG[currentLevel];
+            document.getElementById("rewardTitle").textContent = config.rewardTitle;
+            document.getElementById("rewardText").textContent = config.rewardText;
+            document.getElementById("nextLevelBtn").textContent = config.nextLevelText;
+            
+            // Show appropriate animation based on reward type
+            if (config.rewardType === "engine") {
+                showEngineAnimation();
+            } else if (config.rewardType === "cockpit") {
+                showCockpitAnimation();
+            } else if (config.rewardType === "wings") {
+                showWingAnimation();
+            } else if (config.rewardType === "landing_gear") {
+                showLandingGearAnimation();
+            } else if (config.rewardType === "fuselage") {
+                showFuselageAnimation();
+            } else if (config.rewardType === "master_pilot") {
+                showMasterPilotAnimation();
+            }
+        }
+        
+        rewardUnlocked = true;
+    }
+
+    // Show engine animation
+    function showEngineAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        
+        engineCanvas.style.display = "block";
+        cockpitCanvas.style.display = "none";
+        wingCanvas.style.display = "none";
+        
+        initEngineAnimation();
+    }
+
+    // Show cockpit animation
+    function showCockpitAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        
+        engineCanvas.style.display = "none";
+        cockpitCanvas.style.display = "block";
+        wingCanvas.style.display = "none";
+        
+        initCockpitAnimation();
+    }
+
+    // Show wing animation
+    function showWingAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        
+        engineCanvas.style.display = "none";
+        cockpitCanvas.style.display = "none";
+        wingCanvas.style.display = "block";
+        
+        initWingAnimation();
+    }
+
+    // Show landing gear animation
+    function showLandingGearAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        const fuselageCanvas = document.getElementById("fuselageCanvas");
+        
+        engineCanvas.style.display = "none";
+        cockpitCanvas.style.display = "none";
+        wingCanvas.style.display = "none";
+        fuselageCanvas.style.display = "none";
+        
+        initLandingGearAnimation();
+    }
+
+    // Show fuselage animation
+    function showFuselageAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        const fuselageCanvas = document.getElementById("fuselageCanvas");
+        
+        engineCanvas.style.display = "none";
+        cockpitCanvas.style.display = "none";
+        wingCanvas.style.display = "none";
+        fuselageCanvas.style.display = "block";
+        
+        initFuselageAnimation();
+    }
+
+    // Show master pilot animation
+    function showMasterPilotAnimation() {
+        const engineCanvas = document.getElementById("engineCanvas");
+        const cockpitCanvas = document.getElementById("cockpitCanvas");
+        const wingCanvas = document.getElementById("wingCanvas");
+        const fuselageCanvas = document.getElementById("fuselageCanvas");
+        
+        engineCanvas.style.display = "none";
+        cockpitCanvas.style.display = "none";
+        wingCanvas.style.display = "none";
+        fuselageCanvas.style.display = "none";
+        
+        initMasterPilotAnimation();
+    }
+
+    // Initialize 3D engine animation
+    function initEngineAnimation() {
+        const canvas = document.getElementById('engineCanvas');
+        
+        // Create scene
+        engineScene = new THREE.Scene();
+        engineScene.background = new THREE.Color(0x1e3c72);
+        
+        // Create camera
+        engineCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+        engineCamera.position.z = 5;
+        
+        // Create renderer
+        engineRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        engineRenderer.setSize(canvas.width, canvas.height);
+        engineRenderer.shadowMap.enabled = true;
+        engineRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        engineScene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        engineScene.add(directionalLight);
+        
+        // Create engine body (cylinder)
+        const bodyGeometry = new THREE.CylinderGeometry(1, 1, 3, 8);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x444444,
+            shininess: 100
+        });
+        engineBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        engineBody.castShadow = true;
+        engineBody.receiveShadow = true;
+        engineScene.add(engineBody);
+        
+        // Create turbine blades (torus)
+        const turbineGeometry = new THREE.TorusGeometry(1.2, 0.2, 8, 16);
+        const turbineMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x888888,
+            shininess: 50
+        });
+        engineTurbine = new THREE.Mesh(turbineGeometry, turbineMaterial);
+        engineTurbine.position.x = 2;
+        engineTurbine.castShadow = true;
+        engineScene.add(engineTurbine);
+        
+        // Add some additional engine parts
+        const frontConeGeometry = new THREE.ConeGeometry(0.8, 1, 8);
+        const frontConeMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+        const frontCone = new THREE.Mesh(frontConeGeometry, frontConeMaterial);
+        frontCone.position.x = 2.5;
+        frontCone.rotation.z = Math.PI / 2;
+        engineScene.add(frontCone);
+        
+        // Add exhaust nozzle
+        const nozzleGeometry = new THREE.CylinderGeometry(0.3, 0.6, 1, 8);
+        const nozzleMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+        const nozzle = new THREE.Mesh(nozzleGeometry, nozzleMaterial);
+        nozzle.position.x = -2;
+        engineScene.add(nozzle);
+        
+        // Start animation
+        animateEngine();
+    }
+
+    // Initialize 3D cockpit animation
+    function initCockpitAnimation() {
+        const canvas = document.getElementById('cockpitCanvas');
+        
+        // Create scene
+        cockpitScene = new THREE.Scene();
+        cockpitScene.background = new THREE.Color(0x1e3c72);
+        
+        // Create camera
+        cockpitCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+        cockpitCamera.position.set(0, 0, 5);
+        
+        // Create renderer
+        cockpitRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        cockpitRenderer.setSize(canvas.width, canvas.height);
+        cockpitRenderer.shadowMap.enabled = true;
+        cockpitRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        cockpitScene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        cockpitScene.add(directionalLight);
+        
+        // Add spotlight for dramatic effect
+        const spotlight = new THREE.SpotLight(0xffffff, 1);
+        spotlight.position.set(0, 5, 0);
+        spotlight.angle = Math.PI / 6;
+        spotlight.penumbra = 0.1;
+        spotlight.decay = 2;
+        spotlight.distance = 200;
+        spotlight.castShadow = true;
+        cockpitScene.add(spotlight);
+        
+        // Create cockpit dome (hemisphere)
+        const domeGeometry = new THREE.SphereGeometry(1.5, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+        const domeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x2c3e50,
+            transparent: true,
+            opacity: 0.8,
+            shininess: 100
+        });
+        cockpitDome = new THREE.Mesh(domeGeometry, domeMaterial);
+        cockpitDome.position.y = 1;
+        cockpitDome.castShadow = true;
+        cockpitDome.receiveShadow = true;
+        cockpitScene.add(cockpitDome);
+        
+        // Create cockpit body (box)
+        const bodyGeometry = new THREE.BoxGeometry(2.5, 1, 2);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x34495e,
+            shininess: 50
+        });
+        cockpitBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        cockpitBody.position.y = 0;
+        cockpitBody.castShadow = true;
+        cockpitBody.receiveShadow = true;
+        cockpitScene.add(cockpitBody);
+        
+        // Create radar antenna (cylinder with cone)
+        const antennaGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 8);
+        const antennaMaterial = new THREE.MeshPhongMaterial({ color: 0x95a5a6 });
+        const antenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
+        antenna.position.y = 2.2;
+        cockpitScene.add(antenna);
+        
+        // Create radar dish (cone)
+        const dishGeometry = new THREE.ConeGeometry(0.3, 0.2, 8);
+        const dishMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x7f8c8d,
+            shininess: 100
+        });
+        radarAntenna = new THREE.Mesh(dishGeometry, dishMaterial);
+        radarAntenna.position.y = 2.6;
+        radarAntenna.castShadow = true;
+        cockpitScene.add(radarAntenna);
+        
+        // Add control panel details
+        const panelGeometry = new THREE.BoxGeometry(2, 0.1, 1.5);
+        const panelMaterial = new THREE.MeshPhongMaterial({ color: 0x2c3e50 });
+        const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+        panel.position.set(0, -0.3, 0.5);
+        cockpitScene.add(panel);
+        
+        // Add some instrument details
+        for (let i = 0; i < 5; i++) {
+            const instrumentGeometry = new THREE.CircleGeometry(0.1, 8);
+            const instrumentMaterial = new THREE.MeshPhongMaterial({ color: 0xecf0f1 });
+            const instrument = new THREE.Mesh(instrumentGeometry, instrumentMaterial);
+            instrument.position.set(-0.8 + i * 0.4, -0.25, 0.5);
+            instrument.rotation.x = -Math.PI / 2;
+            cockpitScene.add(instrument);
+        }
+        
+        // Start animation
+        animateCockpit();
+    }
+
+    // Initialize 3D wing animation
+    function initWingAnimation() {
+        const canvas = document.getElementById('wingCanvas');
+        
+        // Create scene
+        wingScene = new THREE.Scene();
+        wingScene.background = new THREE.Color(0x1e3c72);
+        
+        // Create camera
+        wingCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+        wingCamera.position.set(0, 0, 5);
+        
+        // Create renderer
+        wingRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        wingRenderer.setSize(canvas.width, canvas.height);
+        wingRenderer.shadowMap.enabled = true;
+        wingRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        wingScene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        wingScene.add(directionalLight);
+        
+        // Add spotlight for dramatic effect
+        const spotlight = new THREE.SpotLight(0xffffff, 1);
+        spotlight.position.set(0, 5, 0);
+        spotlight.angle = Math.PI / 6;
+        spotlight.penumbra = 0.1;
+        spotlight.decay = 2;
+        spotlight.distance = 200;
+        spotlight.castShadow = true;
+        wingScene.add(spotlight);
+        
+        // Create main wing (elongated box with tapered ends)
+        const wingGeometry = new THREE.BoxGeometry(4, 0.3, 1.5);
+        const wingMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x2c3e50,
+            shininess: 100
+        });
+        wingMain = new THREE.Mesh(wingGeometry, wingMaterial);
+        wingMain.castShadow = true;
+        wingMain.receiveShadow = true;
+        wingScene.add(wingMain);
+        
+        // Create wing tip (cone for aerodynamic shape)
+        const tipGeometry = new THREE.ConeGeometry(0.15, 0.8, 8);
+        const tipMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x34495e,
+            shininess: 80
+        });
+        const wingTip = new THREE.Mesh(tipGeometry, tipMaterial);
+        wingTip.position.set(2.4, 0, 0);
+        wingTip.rotation.z = Math.PI / 2;
+        wingTip.castShadow = true;
+        wingScene.add(wingTip);
+        
+        // Create wing flap (smaller box)
+        const flapGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.8);
+        const flapMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x7f8c8d,
+            shininess: 60
+        });
+        wingFlap = new THREE.Mesh(flapGeometry, flapMaterial);
+        wingFlap.position.set(-0.5, -0.2, 0);
+        wingFlap.castShadow = true;
+        wingScene.add(wingFlap);
+        
+        // Create wing light (emissive sphere)
+        const lightGeometry = new THREE.SphereGeometry(0.1, 8, 6);
+        const lightMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xff6b6b,
+            emissive: 0xff6b6b,
+            emissiveIntensity: 0.5
+        });
+        wingLight = new THREE.Mesh(lightGeometry, lightMaterial);
+        wingLight.position.set(-1.5, 0.2, 0.8);
+        wingScene.add(wingLight);
+        
+        // Create second wing light (green)
+        const lightGeometry2 = new THREE.SphereGeometry(0.1, 8, 6);
+        const lightMaterial2 = new THREE.MeshPhongMaterial({ 
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5
+        });
+        const wingLight2 = new THREE.Mesh(lightGeometry2, lightMaterial2);
+        wingLight2.position.set(-1.5, 0.2, -0.8);
+        wingScene.add(wingLight2);
+        
+        // Add wing details - control surfaces
+        const aileronGeometry = new THREE.BoxGeometry(0.8, 0.05, 0.6);
+        const aileronMaterial = new THREE.MeshPhongMaterial({ color: 0x95a5a6 });
+        const aileron = new THREE.Mesh(aileronGeometry, aileronMaterial);
+        aileron.position.set(1.5, 0.18, 0);
+        aileron.castShadow = true;
+        wingScene.add(aileron);
+        
+        // Add wing root fairing
+        const fairingGeometry = new THREE.CylinderGeometry(0.4, 0.6, 0.4, 8);
+        const fairingMaterial = new THREE.MeshPhongMaterial({ color: 0x34495e });
+        const fairing = new THREE.Mesh(fairingGeometry, fairingMaterial);
+        fairing.position.set(-1.8, 0, 0);
+        fairing.rotation.z = Math.PI / 2;
+        fairing.castShadow = true;
+        wingScene.add(fairing);
+        
+        // Start animation
+        animateWing();
+    }
+
+    // Initialize 3D landing gear animation
+    function initLandingGearAnimation() {
+        const canvas = document.getElementById('wingCanvas'); // Reusing wingCanvas for landing gear
+        
+        // Create scene
+        landingGearScene = new THREE.Scene();
+        landingGearScene.background = new THREE.Color(0x1e3c72);
+        
+        // Create camera
+        landingGearCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+        landingGearCamera.position.set(0, 0, 5);
+        
+        // Create renderer
+        landingGearRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        landingGearRenderer.setSize(canvas.width, canvas.height);
+        landingGearRenderer.shadowMap.enabled = true;
+        landingGearRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        landingGearScene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        landingGearScene.add(directionalLight);
+        
+        // Add spotlight for dramatic effect
+        const spotlight = new THREE.SpotLight(0xffffff, 1);
+        spotlight.position.set(0, 5, 0);
+        spotlight.angle = Math.PI / 6;
+        spotlight.penumbra = 0.1;
+        spotlight.decay = 2;
+        spotlight.distance = 200;
+        spotlight.castShadow = true;
+        landingGearScene.add(spotlight);
+        
+        // Create landing gear (box)
+        const gearGeometry = new THREE.BoxGeometry(1.5, 0.5, 2);
+        const gearMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x34495e,
+            shininess: 100
+        });
+        landingGear = new THREE.Mesh(gearGeometry, gearMaterial);
+        landingGear.position.set(0, -0.25, 0); // Position it below the wing
+        landingGear.castShadow = true;
+        landingGear.receiveShadow = true;
+        landingGearScene.add(landingGear);
+        
+        // Create gear wheels (cylinders)
+        const wheelGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 16);
+        const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x95a5a6 });
+        const wheel1 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel1.position.set(-0.75, -0.25, 0.75);
+        wheel1.rotation.x = Math.PI / 2;
+        wheel1.castShadow = true;
+        landingGearScene.add(wheel1);
+        
+        const wheel2 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel2.position.set(0.75, -0.25, 0.75);
+        wheel2.rotation.x = Math.PI / 2;
+        wheel2.castShadow = true;
+        landingGearScene.add(wheel2);
+        
+        const wheel3 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel3.position.set(-0.75, -0.25, -0.75);
+        wheel3.rotation.x = Math.PI / 2;
+        wheel3.castShadow = true;
+        landingGearScene.add(wheel3);
+        
+        const wheel4 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel4.position.set(0.75, -0.25, -0.75);
+        wheel4.rotation.x = Math.PI / 2;
+        wheel4.castShadow = true;
+        landingGearScene.add(wheel4);
+        
+        // Start animation
+        animateLandingGear();
+    }
+
+    // Initialize 3D fuselage animation
+    function initFuselageAnimation() {
+        const canvas = document.getElementById('fuselageCanvas');
+        
+        // Create scene
+        fuselageScene = new THREE.Scene();
+        fuselageScene.background = new THREE.Color(0x1e3c72);
+        
+        // Create camera
+        fuselageCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+        fuselageCamera.position.set(0, 0, 5);
+        
+        // Create renderer
+        fuselageRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        fuselageRenderer.setSize(canvas.width, canvas.height);
+        fuselageRenderer.shadowMap.enabled = true;
+        fuselageRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        fuselageScene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        fuselageScene.add(directionalLight);
+        
+        // Add spotlight for dramatic effect
+        const spotlight = new THREE.SpotLight(0xffffff, 1);
+        spotlight.position.set(0, 5, 0);
+        spotlight.angle = Math.PI / 6;
+        spotlight.penumbra = 0.1;
+        spotlight.decay = 2;
+        spotlight.distance = 200;
+        spotlight.castShadow = true;
+        fuselageScene.add(spotlight);
+        
+        // Create main fuselage body (cylinder)
+        const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 4, 12);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x3498db,
+            shininess: 100
+        });
+        fuselageBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        fuselageBody.castShadow = true;
+        fuselageBody.receiveShadow = true;
+        fuselageScene.add(fuselageBody);
+        
+        // Create nose cone (cone)
+        const noseGeometry = new THREE.ConeGeometry(0.8, 1.2, 12);
+        const noseMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x2980b9,
+            shininess: 120
+        });
+        fuselageNose = new THREE.Mesh(noseGeometry, noseMaterial);
+        fuselageNose.position.set(2.6, 0, 0);
+        fuselageNose.rotation.z = Math.PI / 2;
+        fuselageNose.castShadow = true;
+        fuselageScene.add(fuselageNose);
+        
+        // Create tail cone (cone)
+        const tailGeometry = new THREE.ConeGeometry(0.8, 1.2, 12);
+        const tailMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x2980b9,
+            shininess: 120
+        });
+        fuselageTail = new THREE.Mesh(tailGeometry, tailMaterial);
+        fuselageTail.position.set(-2.6, 0, 0);
+        fuselageTail.rotation.z = -Math.PI / 2;
+        fuselageTail.castShadow = true;
+        fuselageScene.add(fuselageTail);
+        
+        // Add windows along the fuselage
+        for (let i = 0; i < 6; i++) {
+            const windowGeometry = new THREE.CircleGeometry(0.15, 8);
+            const windowMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x87ceeb,
+                transparent: true,
+                opacity: 0.8,
+                shininess: 150
+            });
+            const window = new THREE.Mesh(windowGeometry, windowMaterial);
+            window.position.set(-1.5 + i * 0.6, 0.8, 0);
+            window.rotation.x = -Math.PI / 2;
+            fuselageScene.add(window);
+        }
+        
+        // Add door
+        const doorGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.1);
+        const doorMaterial = new THREE.MeshPhongMaterial({ color: 0x2c3e50 });
+        const door = new THREE.Mesh(doorGeometry, doorMaterial);
+        door.position.set(0, 0, 0.9);
+        door.castShadow = true;
+        fuselageScene.add(door);
+        
+        // Add tail fin
+        const finGeometry = new THREE.BoxGeometry(0.1, 1.5, 0.8);
+        const finMaterial = new THREE.MeshPhongMaterial({ color: 0x34495e });
+        const fin = new THREE.Mesh(finGeometry, finMaterial);
+        fin.position.set(-2.2, 0.75, 0);
+        fin.castShadow = true;
+        fuselageScene.add(fin);
+        
+        // Add horizontal stabilizer
+        const stabilizerGeometry = new THREE.BoxGeometry(1.2, 0.1, 0.6);
+        const stabilizerMaterial = new THREE.MeshPhongMaterial({ color: 0x34495e });
+        const stabilizer = new THREE.Mesh(stabilizerGeometry, stabilizerMaterial);
+        stabilizer.position.set(-2.2, 0, 0.4);
+        stabilizer.castShadow = true;
+        fuselageScene.add(stabilizer);
+        
+        // Add landing gear bay
+        const bayGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.4);
+        const bayMaterial = new THREE.MeshPhongMaterial({ color: 0x2c3e50 });
+        const bay = new THREE.Mesh(bayGeometry, bayMaterial);
+        bay.position.set(0, -0.55, 0);
+        bay.castShadow = true;
+        fuselageScene.add(bay);
+        
+        // Start animation
+        animateFuselage();
+    }
+
+    // Animate the engine
+    function animateEngine() {
+        animationId = requestAnimationFrame(animateEngine);
+        
+        // Rotate turbine blades
+        if (engineTurbine) {
+            engineTurbine.rotation.x += 0.1;
+        }
+        
+        // Rotate engine body slowly
+        if (engineBody) {
+            engineBody.rotation.y += 0.02;
+        }
+        
+        // Render the scene
+        if (engineRenderer && engineScene && engineCamera) {
+            engineRenderer.render(engineScene, engineCamera);
+        }
+    }
+
+    // Animate the cockpit
+    function animateCockpit() {
+        animationId = requestAnimationFrame(animateCockpit);
+        
+        // Rotate radar antenna continuously
+        if (radarAntenna) {
+            radarAntenna.rotation.y += 0.05;
+        }
+        
+        // Slightly bob the cockpit to simulate motion
+        if (cockpitDome && cockpitBody) {
+            const time = Date.now() * 0.001;
+            const bobAmount = Math.sin(time * 2) * 0.05;
+            cockpitDome.position.y = 1 + bobAmount;
+            cockpitBody.position.y = bobAmount;
+        }
+        
+        // Rotate the entire cockpit slowly
+        if (cockpitDome && cockpitBody) {
+            cockpitDome.rotation.y += 0.01;
+            cockpitBody.rotation.y += 0.01;
+        }
+        
+        // Render the scene
+        if (cockpitRenderer && cockpitScene && cockpitCamera) {
+            cockpitRenderer.render(cockpitScene, cockpitCamera);
+        }
+    }
+
+    // Animate the wing
+    function animateWing() {
+        animationId = requestAnimationFrame(animateWing);
+        
+        // Gently sway the wing up and down
+        if (wingMain) {
+            const time = Date.now() * 0.001;
+            const swayAmount = Math.sin(time * 1.5) * 0.1;
+            wingMain.rotation.z = swayAmount;
+            
+            // Also rotate the wing slightly for dynamic effect
+            wingMain.rotation.y = Math.sin(time * 0.5) * 0.05;
+        }
+        
+        // Animate the wing flap
+        if (wingFlap) {
+            const time = Date.now() * 0.002;
+            const flapAngle = Math.sin(time) * 0.2;
+            wingFlap.rotation.x = flapAngle;
+        }
+        
+        // Blink the wing lights
+        if (wingLight) {
+            const time = Date.now() * 0.003;
+            const blinkIntensity = 0.3 + Math.sin(time * 4) * 0.2;
+            wingLight.material.emissiveIntensity = blinkIntensity;
+        }
+        
+        // Rotate the entire wing slowly
+        if (wingMain && wingFlap) {
+            const time = Date.now() * 0.001;
+            wingMain.rotation.y += 0.01;
+            wingFlap.rotation.y += 0.01;
+        }
+        
+        // Render the scene
+        if (wingRenderer && wingScene && wingCamera) {
+            wingRenderer.render(wingScene, wingCamera);
+        }
+    }
+
+    // Animate the landing gear
+    function animateLandingGear() {
+        animationId = requestAnimationFrame(animateLandingGear);
+        
+        // Rotate wheels
+        if (landingGear) {
+            landingGear.rotation.y += 0.1;
+        }
+        if (wheel1) {
+            wheel1.rotation.y += 0.2;
+        }
+        if (wheel2) {
+            wheel2.rotation.y += 0.2;
+        }
+        if (wheel3) {
+            wheel3.rotation.y += 0.2;
+        }
+        if (wheel4) {
+            wheel4.rotation.y += 0.2;
+        }
+        
+        // Render the scene
+        if (landingGearRenderer && landingGearScene && landingGearCamera) {
+            landingGearRenderer.render(landingGearScene, landingGearCamera);
+        }
+    }
+
+    // Animate the fuselage
+    function animateFuselage() {
+        animationId = requestAnimationFrame(animateFuselage);
+        
+        // Gently rotate the entire fuselage
+        if (fuselageBody && fuselageNose && fuselageTail) {
+            const time = Date.now() * 0.001;
+            
+            // Rotate the fuselage slowly
+            fuselageBody.rotation.y += 0.01;
+            fuselageNose.rotation.y += 0.01;
+            fuselageTail.rotation.y += 0.01;
+            
+            // Add a gentle floating motion
+            const floatAmount = Math.sin(time * 1.5) * 0.05;
+            fuselageBody.position.y = floatAmount;
+            fuselageNose.position.y = floatAmount;
+            fuselageTail.position.y = floatAmount;
+            
+            // Slight pitch motion
+            const pitchAmount = Math.sin(time * 0.8) * 0.02;
+            fuselageBody.rotation.x = pitchAmount;
+            fuselageNose.rotation.x = pitchAmount;
+            fuselageTail.rotation.x = pitchAmount;
+        }
+        
+        // Render the scene
+        if (fuselageRenderer && fuselageScene && fuselageCamera) {
+            fuselageRenderer.render(fuselageScene, fuselageCamera);
+        }
+    }
+
+    // Proceed to next level
+    function proceedToNextLevel() {
+        console.log("Proceeding to next level...");
+        
+        // Stop animation
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+        
+        // Hide reward modal
+        const rewardModal = document.getElementById("rewardModal");
+        rewardModal.style.display = "none";
+        
+        // Get next level
+        const nextLevel = currentLevel + 1;
+        
+        if (LEVEL_CONFIG[nextLevel]) {
+            // Start next level
+            startLevel(nextLevel);
+        } else {
+            // No more levels - show completion message
+            alert("🎉 Congratulations! You've completed all available levels!");
+            resetState();
+        }
+    }
+
+    // Start a specific level
+    function startLevel(level) {
+        console.log(`Starting Level ${level}...`);
+        
+        // Reset game state
+        resetState();
+        currentLevel = level;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Re-enable inputs
+        disableAllInputs(false);
+        
+        // Automatically scramble for the level
+        if (level === 1) {
+            scrambleCubeLevel1();
+        } else if (level === 2) {
+            scrambleCubeLevel2();
+        } else if (level === 3) {
+            scrambleCubeLevel3();
+        } else if (level === 4) {
+            scrambleCubeLevel4();
+        } else if (level === 5) {
+            scrambleCubeLevel5();
+        }
+    }
+
+    // Retry cube (reset and enable inputs)
+    function retryCube() {
+        closeSuccessModal();
+        resetState();
+        isSolved = false;
+        rewardUnlocked = false;
+    }
+
+    // Disable/enable all inputs
+    function disableAllInputs(disable) {
+        const inputs = [
+            "solve-button",
+            "undo-button", 
+            "scramble-button",
+            "level1-button",
+            "level2-button",
+            "level3-button",
+            "level4-button",
+            "level5-button",
+            "reset-button",
+            "done-button",
+            "clockwise-icon",
+            "counter-clockwise-icon"
+        ];
+        
+        inputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.disabled = disable;
+            }
+        });
+    }
+
+    // Apply moves one by one with delay
+    async function applyScrambleSequence(sequence) {
+        isScrambling = true;
+        
+        // Disable buttons during scrambling
+        document.getElementById("solve-button").disabled = true;
+        document.getElementById("undo-button").disabled = true;
+        document.getElementById("scramble-button").disabled = true;
+        document.getElementById("level1-button").disabled = true;
+        document.getElementById("level2-button").disabled = true;
+        document.getElementById("level3-button").disabled = true;
+        document.getElementById("level4-button").disabled = true;
+        document.getElementById("level5-button").disabled = true;
+        document.getElementById("reset-button").disabled = true;
+        document.getElementById("done-button").disabled = true;
+        
+        try {
+            for (let i = 0; i < sequence.length; i++) {
+                const move = sequence[i];
+                console.log("Executing move:", move);
+                
+                // Create and dispatch a keyboard event
+                const keyCode = move.charAt(0).charCodeAt();
+                const event = new KeyboardEvent('keydown', {
+                    key: move.charAt(0),
+                    keyCode: keyCode,
+                    which: keyCode,
+                    bubbles: true
+                });
+                
+                // Trigger the keyboard event
+                document.dispatchEvent(event);
+                
+                // Wait before next move (300ms delay)
+                if (i < sequence.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+        } catch (error) {
+            console.error("Error during scrambling:", error);
+        } finally {
+            isScrambling = false;
+            
+            // Re-enable buttons
+            document.getElementById("solve-button").disabled = false;
+            document.getElementById("undo-button").disabled = false;
+            document.getElementById("scramble-button").disabled = false;
+            document.getElementById("reset-button").disabled = false;
+            document.getElementById("done-button").disabled = false;
+            // Keep level buttons disabled until solved or reset
+        }
+    }
+
+    // Level 1 scramble function
+    async function scrambleCubeLevel1() {
+        console.log("Level 1 scramble function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Level 1 scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting Level 1 cube scramble...");
+        
+        currentLevel = 1;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Generate scramble sequence (3 moves)
+        const scrambleSequence = generateScrambleSequence(1);
+        console.log("Level 1 scramble sequence:", scrambleSequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(scrambleSequence);
+        
+        console.log("Level 1 cube scramble completed!");
+    }
+
+    // Level 2 scramble function
+    async function scrambleCubeLevel2() {
+        console.log("Level 2 scramble function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Level 2 scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting Level 2 cube scramble...");
+        
+        currentLevel = 2;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Generate scramble sequence (4 moves)
+        const scrambleSequence = generateScrambleSequence(2);
+        console.log("Level 2 scramble sequence:", scrambleSequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(scrambleSequence);
+        
+        console.log("Level 2 cube scramble completed!");
+    }
+
+    // Level 3 scramble function
+    async function scrambleCubeLevel3() {
+        console.log("Level 3 scramble function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Level 3 scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting Level 3 cube scramble...");
+        
+        currentLevel = 3;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Store the solved state for comparison
+        solvedState = getCurrentCubeState();
+        
+        // Generate scramble sequence (5 moves)
+        const scrambleSequence = generateScrambleSequence(3);
+        console.log("Level 3 scramble sequence:", scrambleSequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(scrambleSequence);
+        
+        console.log("Level 3 cube scramble completed!");
+    }
+
+    // Level 4 scramble function
+    async function scrambleCubeLevel4() {
+        console.log("Level 4 scramble function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Level 4 scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting Level 4 cube scramble...");
+        
+        currentLevel = 4;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Store the solved state for comparison
+        solvedStateLevel4 = getCurrentCubeState();
+        
+        // Generate scramble sequence (7 moves)
+        const scrambleSequence = generateScrambleSequence(4);
+        console.log("Level 4 scramble sequence:", scrambleSequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(scrambleSequence);
+        
+        console.log("Level 4 cube scramble completed!");
+    }
+
+    // Level 5 scramble function
+    async function scrambleCubeLevel5() {
+        console.log("Level 5 scramble function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Level 5 scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting Level 5 cube scramble...");
+        
+        currentLevel = 5;
+        isSolved = false;
+        rewardUnlocked = false;
+        
+        // Store the solved state for comparison
+        solvedStateLevel5 = getCurrentCubeState();
+        
+        // Generate scramble sequence (10 moves)
+        const scrambleSequence = generateScrambleSequence(5);
+        console.log("Level 5 scramble sequence:", scrambleSequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(scrambleSequence);
+        
+        console.log("Level 5 cube scramble completed!");
+    }
+
+    // Original scramble function (for regular scrambling)
+    async function scrambleCube() {
+        console.log("scrambleCube function called!");
+        
+        // Prevent scrambling if already in progress
+        if (isScrambling) {
+            console.log("Scrambling blocked: already in progress");
+            return;
+        }
+        
+        console.log("Starting cube scramble...");
+        
+        currentLevel = 0; // Regular scramble, not a level
+        
+        // Generate scramble sequence (20 moves for regular scramble)
+        const sequence = [];
+        let lastMove = '';
+        let secondLastMove = '';
+        
+        for (let i = 0; i < 20; i++) {
+            let move;
+            do {
+                move = getRandomMove();
+            } while (
+                move === lastMove ||
+                (move.charAt(0) === lastMove.charAt(0) && move !== lastMove) ||
+                (move === lastMove && move === secondLastMove)
+            );
+            
+            sequence.push(move);
+            secondLastMove = lastMove;
+            lastMove = move;
+        }
+        
+        console.log("Scramble sequence:", sequence.join(' '));
+        
+        // Apply the sequence
+        await applyScrambleSequence(sequence);
+        
+        console.log("Cube scramble completed!");
+    }
+
+    // Helper function to get current cube state
+    function getCurrentCubeState() {
+        // This function should capture the current state of the cube
+        // For now, we'll use a simple approach - in a real implementation,
+        // this would interface with the 3D cube object to get the actual state
+        return {
+            timestamp: Date.now(),
+            level: currentLevel,
+            // In a full implementation, this would contain the actual cube face states
+        };
+    }
+
+    // Helper function to compare cube states
+    function isCubeSolvedByState(currentState, solvedState) {
+        // For Level 5, we'll use the existing solve detection logic
+        // In a real implementation, this would compare the actual cube face states
+        return checkIfSolvedSimple();
+    }
+
+    // Level-specific solve detection for Level 4
+    function checkIfSolvedLevel4() {
+        const currentState = getCurrentCubeState();
+        return isCubeSolvedByState(currentState, solvedStateLevel4);
+    }
+
+    // Level-specific solve detection for Level 5
+    function checkIfSolvedLevel5() {
+        const currentState = getCurrentCubeState();
+        return isCubeSolvedByState(currentState, solvedStateLevel5);
+    }
+
+    // Make functions available globally
+    window.scrambleCube = scrambleCube;
+    window.scrambleCubeLevel1 = scrambleCubeLevel1;
+    window.scrambleCubeLevel2 = scrambleCubeLevel2;
+    window.scrambleCubeLevel3 = scrambleCubeLevel3;
+    window.scrambleCubeLevel4 = scrambleCubeLevel4;
+    window.scrambleCubeLevel5 = scrambleCubeLevel5;
+    window.checkIfSolved = checkIfSolved;
+    window.collectReward = collectReward;
+    window.proceedToNextLevel = proceedToNextLevel;
+    window.closeSuccessModal = closeSuccessModal;
+    window.closeFailureModal = closeFailureModal;
+    window.retryCube = retryCube;
+    
+    // Debug: Check if functions are available
+    console.log("Solve detection and reward functions loaded:");
+    console.log("- window.checkIfSolved:", typeof window.checkIfSolved);
+    console.log("- window.collectReward:", typeof window.collectReward);
+    console.log("- window.proceedToNextLevel:", typeof window.proceedToNextLevel);
+    console.log("- window.scrambleCubeLevel1:", typeof window.scrambleCubeLevel1);
+    console.log("- window.scrambleCubeLevel2:", typeof window.scrambleCubeLevel2);
+    console.log("- window.scrambleCubeLevel3:", typeof window.scrambleCubeLevel3);
+    console.log("- window.scrambleCubeLevel4:", typeof window.scrambleCubeLevel4);
+    console.log("- window.scrambleCubeLevel5:", typeof window.scrambleCubeLevel5);
+    </script>
+  </body>
+</html>
